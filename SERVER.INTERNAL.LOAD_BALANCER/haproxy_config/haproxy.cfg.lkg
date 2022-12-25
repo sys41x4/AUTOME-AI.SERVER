@@ -1,0 +1,84 @@
+# _md5hash=ffe17c21af3a837db7a6864c9a4b8ae9
+# _version=2
+# Dataplaneapi managed File
+# changing file directly can cause a conflict if dataplaneapi is running
+
+# timeout tunnel available in ALOHA 5.5 or HAProxy 1.5-dev10 and higher
+global
+  master-worker
+  stats socket /var/run/haproxy.sock user haproxy group haproxy mode 660 level admin expose-fd listeners
+
+defaults unnamed_defaults_1
+  mode http
+  backlog 10000
+  log global
+  option httplog
+  option redispatch
+  option dontlognull
+  option http-server-close
+  option contstats
+  option forwardfor
+  timeout http-request 15s
+  timeout connect 5s
+  timeout client 25s
+  timeout queue 30s
+  timeout server 25s
+  timeout tunnel 3600s
+  timeout http-keep-alive 1s
+  timeout tarpit 60s
+  retries 3
+  default-server inter 3s rise 2 fall 3
+
+frontend ft_web_ai from unnamed_defaults_1
+  maxconn 10000
+  bind *:8000 name http
+  default_backend bk_web_usr
+
+frontend ft_web_iot_slave from unnamed_defaults_1
+  maxconn 10000
+  bind *:8081 name http
+  default_backend bk_web_iot_slave
+
+frontend ft_web_nlp from unnamed_defaults_1
+  maxconn 10000
+  bind *:8001 name http
+  bind *:8080 name http
+  bind *:8081 name http
+  default_backend bk_web_usr
+
+frontend ft_web_usr from unnamed_defaults_1
+  maxconn 10000
+  bind *:8080 name http
+  default_backend bk_web_usr
+
+backend bk_web_ai from unnamed_defaults_1
+  mode http
+  balance leastconn
+  server service_controller0 172.17.0.2:8000 maxconn 10000 weight 10 cookie service_controller0 check
+  server service_controller1 172.17.0.3:8000 maxconn 10000 weight 10 cookie service_controller1 check
+  server service_controller2 172.17.0.4:8000 maxconn 10000 weight 10 cookie service_controller2 check
+
+backend bk_web_iot_slave from unnamed_defaults_1
+  mode http
+  balance leastconn
+  server service_controller0 172.17.0.2:8081 maxconn 10000 weight 10 cookie service_controller0 check
+  server service_controller1 172.17.0.3:8081 maxconn 10000 weight 10 cookie service_controller1 check
+  server service_controller2 172.17.0.4:8081 maxconn 10000 weight 10 cookie service_controller2 check
+
+backend bk_web_nlp from unnamed_defaults_1
+  mode http
+  balance leastconn
+  server service_controller0 172.17.0.2:8001 maxconn 10000 weight 10 cookie service_controller0 check
+  server service_controller1 172.17.0.3:8001 maxconn 10000 weight 10 cookie service_controller1 check
+  server service_controller2 172.17.0.4:8001 maxconn 10000 weight 10 cookie service_controller2 check
+
+backend bk_web_usr from unnamed_defaults_1
+  mode http
+  balance leastconn
+  server service_controller0 172.17.0.2:8080 maxconn 10000 weight 10 cookie service_controller0 check
+  server service_controller1 172.17.0.3:8080 maxconn 10000 weight 10 cookie service_controller1 check
+  server service_controller2 172.17.0.4:8080 maxconn 10000 weight 10 cookie service_controller2 check
+
+program api
+  command /usr/local/etc/haproxy/dataplaneapi -f /usr/local/etc/haproxy/dataplaneapi.hcl --reload-cmd "kill -SIGUSR2 1"
+  no option start-on-reload

@@ -1,0 +1,8 @@
+{
+ "0":{
+    "user":"test",
+    "pass":"test",
+    "dir":"/assets",
+    "perm":"elr"
+  }
+}

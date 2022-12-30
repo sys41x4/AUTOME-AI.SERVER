@@ -1,0 +1,18 @@
+[SERVER_info]
+ID = "e2a521bc01c1ca09e173bcf65bcc97e9"
+
+[FTPS_info]
+expose_dir = "/assets"
+host = "0.0.0.0"
+listner_port = 21
+max_conn = 255
+max_conn_per_ip = 4
+
+
+[server_key_info]
+ftps_key_filePath = "/usr/local/etc/AUTOME_AI/MASS_STORAGE/.keys/server_ftps_sample.key"
+ftps_cert_filePath = "/usr/local/etc/AUTOME_AI/MASS_STORAGE/.cert/server_ftps_sample.crt"
+
+[speech_storage_info]
+max_storage = 10240
+storage_dir = "/assets/sound/speech_content" 
